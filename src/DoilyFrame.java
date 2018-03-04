@@ -1,6 +1,4 @@
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -23,16 +21,27 @@ public class DoilyFrame extends JFrame {
         JButton redo = new JButton("Redo");
         JCheckBox reflect = new JCheckBox("Reflect");
         JCheckBox showLines = new JCheckBox("Hide sector lines");
+        JCheckBox eraser = new JCheckBox("Erase");
         JButton save = new JButton("Save");
         JSpinner size = new JSpinner(new SpinnerNumberModel(20,10,100,10));
 
         showLines.addItemListener(new ShowLinesListener());
 
-        size.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                doilyPanel.setCurrentSize((int)size.getValue());
-            }
+        size.addChangeListener(e -> doilyPanel.setCurrentSize((int)size.getValue()));
+
+        clear.addActionListener((e) -> {
+            doilyPanel.getPoints().clear();
+            repaint();
+        });
+
+        reflect.addItemListener((e) -> {
+            doilyPanel.setReflect(!doilyPanel.getReflect());
+            repaint();
+        });
+
+        eraser.addItemListener((e) -> {
+            doilyPanel.setEraser(!doilyPanel.getEraser());
+            repaint();
         });
 
         panel.add(settingsPanel, BorderLayout.NORTH);
@@ -43,6 +52,7 @@ public class DoilyFrame extends JFrame {
         settingsPanel.add(redo);
         settingsPanel.add(reflect);
         settingsPanel.add(showLines);
+        settingsPanel.add(eraser);
         settingsPanel.add(size);
         settingsPanel.add(save);
 

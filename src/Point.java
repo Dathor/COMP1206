@@ -6,11 +6,19 @@ public class Point {
     private int y;
     private Color color;
     private int size;
+    private boolean reflect;
 
-    public Point(int x, int y, Color color, int size){
+    public Point(int x, int y, Color color, int size, boolean reflect){
         this.x = x;
         this.y = y;
         this.color = color;
+        this.size = size;
+        this.reflect = reflect;
+    }
+
+    public Point(int x, int y, int size){
+        this.x = x;
+        this.y = y;
         this.size = size;
     }
 
@@ -30,6 +38,10 @@ public class Point {
         this.size = size;
     }
 
+    public void setReflect(boolean reflect) {
+        this.reflect = reflect;
+    }
+
     public int getX() {
         return x;
     }
@@ -44,5 +56,14 @@ public class Point {
 
     public int getSize() {
         return size;
+    }
+
+    public boolean getReflect() {
+        return reflect;
+    }
+
+    public boolean isOverlapping(Point point){
+        double distance = Math.sqrt(Math.pow((this.x - point.x), 2) + Math.pow((this.y - point.y), 2));
+        return distance < (this.size + point.size) / 2;
     }
 }

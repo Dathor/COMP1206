@@ -2,25 +2,23 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 public class DoilyPanel extends JPanel {
 
     private int lines = 12;
     private boolean showLines = true;
     private ArrayList<Point> points = new ArrayList<>();
-    private Color currentColor;
+    private Color currentColor = Color.RED;
     private int currentSize = 20;
     private boolean reflect = false;
     private boolean eraser = false;
+    private ArrayList<Point> undo = new ArrayList<>();
 
     public DoilyPanel() {
         this.setBackground(Color.BLACK);
         this.addMouseListener(new MouseDrawingListener());
         this.addMouseMotionListener(new MouseDrawingListener());
-        this.currentColor = Color.RED;
     }
 
     public void setLines(int lines) {
@@ -41,6 +39,10 @@ public class DoilyPanel extends JPanel {
 
     public void setEraser(boolean eraser) {
         this.eraser = eraser;
+    }
+
+    public void setCurrentColor(Color currentColor) {
+        this.currentColor = currentColor;
     }
 
     public boolean getReflect() {
@@ -65,7 +67,23 @@ public class DoilyPanel extends JPanel {
         if (showLines) {
             drawLines(graphics2D);
         }
+    }
 
+
+    public void undo(){
+        if(points.isEmpty()){
+            return;
+        }
+        undo.add(points.get(points.size() - 1));
+        points.remove(points.get(points.size() - 1));
+    }
+
+    public void redo(){
+        if(undo.isEmpty()){
+            return;
+        }
+        undo.remove(undo.size() - 1);
+        points.add(undo.get(undo.size() - 1));
     }
 
     private void drawLines(Graphics2D graphics2D) {
@@ -81,12 +99,12 @@ public class DoilyPanel extends JPanel {
     }
 
     private void drawPoints(Graphics2D graphics2D) {
-        graphics2D.setColor(Color.RED);
         int centerWidth = this.getWidth() / 2;
         int centerHeight = this.getHeight() / 2;
         double theta = 360.0 / lines;
         for (Point point : points) {
             for (int i = 0; i < lines; i++) {
+                graphics2D.setColor(point.getColor());
                 graphics2D.rotate(Math.toRadians(theta), centerWidth, centerHeight);
                 graphics2D.fillOval(point.getX() - (point.getSize() / 2), point.getY() - (point.getSize() / 2), point.getSize(), point.getSize());
                 if(point.getReflect()) {
@@ -99,36 +117,24 @@ public class DoilyPanel extends JPanel {
 
         class MouseDrawingListener extends MouseAdapter {
             public void mouseClicked(MouseEvent e) {
-                if(!eraser) {
-                    points.add(new Point(e.getX(), e.getY(), currentColor, currentSize, reflect));
-                } if(eraser && !points.isEmpty()){
-                    Iterator<Point> it = points.iterator();
-                    Point erased = new Point(e.getX(), e.getY(), currentSize);
-                    while(it.hasNext()){
-                        Point p = it.next();
-                        if(p.isOverlapping(erased)){
-                            it.remove();
-                        }
-                    }
-                }
-                repaint();
+                addPoint(e.getX(), e.getY());
             }
 
             public void mouseDragged(MouseEvent e) {
-                if(!eraser) {
-                    points.add(new Point(e.getX(), e.getY(), currentColor, currentSize, reflect));
-                } if(eraser && !points.isEmpty()){
-                    Iterator<Point> it = points.iterator();
-                    Point erased = new Point(e.getX(), e.getY(), currentSize);
-                    while(it.hasNext()){
-                        Point p = it.next();
-                        if(p.isOverlapping(erased)){
-                            it.remove();
-                        }
-                    }
-                }
-                repaint();
+                addPoint(e.getX(), e.getY());
             }
+
+        }
+
+        private void addPoint(int x, int y){
+            Point toAdd = new Point(x, y, currentColor, currentSize, reflect);
+            if(eraser) {
+                toAdd.setColor(Color.BLACK);
+            }
+            if(!points.contains(toAdd)){
+                points.add(toAdd);
+            }
+            repaint();
         }
 }
 

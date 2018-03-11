@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
+import java.util.Iterator;
 
 public class DoilyFrame extends JFrame {
 
@@ -15,7 +16,7 @@ public class DoilyFrame extends JFrame {
     public void init(){
         this.setContentPane(panel);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        this.setSize(1000,1000);
+        this.setSize(1200,1000);
 
         panel.setLayout(new BorderLayout());
 
@@ -31,11 +32,12 @@ public class DoilyFrame extends JFrame {
         JLabel sizeLabel = new JLabel("Pen size:");
         JSpinner sectors = new JSpinner(new SpinnerNumberModel(12, 2, 36, 1));
         JLabel sectorsLabel = new JLabel("Sectors:");
+        JButton removeImage = new JButton("Remove");
 
         sizeLabel.setLabelFor(size);
         sectorsLabel.setLabelFor(sectors);
         color.setIcon(setButtonIcon(Color.RED));
-        galleryPanel.setPreferredSize(new Dimension(150, 800));
+        galleryPanel.setPreferredSize(new Dimension(this.getWidth() / 5, doilyPanel.getHeight()));
 
         showLines.addItemListener(new ShowLinesListener());
 
@@ -83,9 +85,21 @@ public class DoilyFrame extends JFrame {
         save.addActionListener((e) -> {
             BufferedImage img = new BufferedImage(doilyPanel.getWidth(), doilyPanel.getHeight(), BufferedImage.TYPE_INT_RGB);
             Graphics2D g2d = img.createGraphics();
-            doilyPanel.paint(g2d);
-            galleryPanel.addImage(img.getScaledInstance(100, 100, Image.SCALE_SMOOTH));
+            doilyPanel.print(g2d);
+            galleryPanel.addImage(img.getScaledInstance(getWidth() / 12, getHeight() / 10, Image.SCALE_SMOOTH));
             repaint();
+        });
+
+        removeImage.addActionListener((e) -> {
+            ImageComponent toBeRemoved = null;
+            Iterator<ImageComponent> it = galleryPanel.getImageIterator();
+            while(it.hasNext()){
+                ImageComponent img = it.next();
+                if(img.getBorder() != null){
+                    toBeRemoved = img;
+                }
+            }
+            galleryPanel.removeImage(toBeRemoved);
         });
 
         panel.add(settingsPanel, BorderLayout.NORTH);
@@ -104,6 +118,8 @@ public class DoilyFrame extends JFrame {
         settingsPanel.add(sectorsLabel);
         settingsPanel.add(sectors);
         settingsPanel.add(save);
+
+        galleryPanel.add(removeImage, BorderLayout.SOUTH);
 
         this.setVisible(true);
     }
